@@ -11,23 +11,23 @@ import { motion } from 'framer-motion';
  */
 export function AnimatedBackground() {
   return (
-    <div className='fixed inset-0 -z-10 overflow-hidden'>
+    <div className='fixed inset-0 -z-10 overflow-hidden min-h-screen'>
       {/* 메인 배경 - 색상 변화 애니메이션 */}
       <motion.div
         className='absolute inset-0'
         animate={{
           background: [
-            'linear-gradient(45deg, #000000, #1a1a1a, #333333)', // 검정 → 진한 회색
-            'linear-gradient(135deg, #1a1a1a, #2d2d2d, #404040)', // 진한 회색 → 회색
-            'linear-gradient(225deg, #2d2d2d, #1a1a1a, #000000)', // 회색 → 검정
-            'linear-gradient(315deg, #000000, #0d0d0d, #262626)', // 검정 → 어두운 회색
-            'linear-gradient(45deg, #000000, #1a1a1a, #333333)', // 원점 복귀
+            'linear-gradient(45deg, #000000, #1a1a1a, #404040)', // 블랙 → 다크 그레이
+            'linear-gradient(135deg, #1a1a1a, #404040, #666666)',
+            'linear-gradient(225deg, #404040, #666666, #999999)',
+            'linear-gradient(315deg, #666666, #404040, #1a1a1a)',
+            'linear-gradient(45deg, #000000, #1a1a1a, #404040)',
           ],
         }}
         transition={{
-          duration: 20, // 전체 사이클 시간 (초) - 커스터마이징 포인트
+          duration: 8, // 부드러운 전환 속도
           repeat: Infinity,
-          ease: 'linear',
+          ease: 'easeInOut', // 부드러운 전환
         }}
       />
     </div>

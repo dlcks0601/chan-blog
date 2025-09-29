@@ -2,14 +2,14 @@
 import {
   HeroSection,
   DescriptionSection,
-  AnimatedBackground,
+  // AnimatedBackground,
 } from './components';
 
 export function HomePage() {
   return (
     <>
-      <AnimatedBackground />
-      <div className='flex flex-col h-full w-full lg:p-10 relative z-10'>
+      {/* <AnimatedBackground /> */}
+      <div className='flex flex-col h-full w-full relative z-10'>
         <div className='flex w-full flex-col'>
           <HeroSection />
           <DescriptionSection />
