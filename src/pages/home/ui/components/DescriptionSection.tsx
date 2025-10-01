@@ -1,6 +1,6 @@
 // FSD v2.1: Page-specific component - only used on home page
-import { Writer } from '@/shared/ui/Writer/Writer';
-import { Menu } from '../Menu/Menu';
+import { Writer } from '@/shared/ui';
+import { Menu } from '../Menu';
 
 export function DescriptionSection() {
   return (
