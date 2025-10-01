@@ -8,7 +8,7 @@ export { metadata };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='ko'>
-      <body className='bg-black text-white'>
+      <body className='bg-[#131313] text-white'>
         <Layout>{children}</Layout>
       </body>
     </html>
