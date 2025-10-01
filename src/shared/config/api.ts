@@ -4,6 +4,6 @@ export const API_CONFIG = {
   TIMEOUT: 5000,
   ENDPOINTS: {
     USERS: '/users',
-    POSTS: '/posts',
+    FEEDS: '/feeds',
   },
 } as const;

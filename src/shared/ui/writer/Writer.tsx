@@ -40,12 +40,13 @@ export function Writer({
   }
 
   const renderHighlightedText = (text: string) => {
-    if (highlightWords.length === 0 && Object.keys(links).length === 0) {
-      return text;
-    }
+    const words = text.split(/(\s+|\n)/); // 공백과 줄바꿈을 분리
 
-    const words = text.split(' ');
     return words.map((word, index) => {
+      if (word === '\n') {
+        return <br key={index} />; // 줄바꿈 처리
+      }
+
       const cleanWord = word.replace(/[.,!?]/g, '');
       const isHighlighted = highlightWords.some(
         highlight => cleanWord.toLowerCase() === highlight.toLowerCase()
@@ -68,7 +69,6 @@ export function Writer({
           ) : (
             word
           )}
-          {index < words.length - 1 ? ' ' : ''}
         </span>
       );
     });

@@ -13,9 +13,9 @@ export function PageHeader({ title }: PageHeaderProps) {
       </h2>
       <Link
         href='/'
-        className='text-[1rem] lg:text-[2rem] text-white underline font-jetbrains-medium'
+        className='text-[1rem] lg:text-[1.5rem] text-white underline font-jetbrains-light'
       >
-        / Home
+        Home
       </Link>
     </div>
   );
