@@ -36,6 +36,7 @@ export const getFeedSourceBySlug = async (slug: string) => {
     // Return a valid but empty serialized content to prevent build failures
     return {
       compiledSource: '',
+      scope: {},
       frontmatter: {},
       feed: {
         title: 'Error loading feed',

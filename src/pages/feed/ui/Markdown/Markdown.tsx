@@ -1,31 +1,32 @@
 'use client';
 
-import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote';
+import { useEffect, useState } from 'react';
+import type { MDXRemoteSerializeResult } from 'next-mdx-remote';
 
 type Props = {
-  source: {
-    compiledSource: string;
-    scope?: Record<string, unknown>;
-    frontmatter?: Record<string, unknown>;
-  };
+  source: MDXRemoteSerializeResult;
 };
 
 export const Markdown = ({ source }: Props) => {
-  const mdxSerializedContent = {
-    compiledSource: source.compiledSource,
-    scope: source.scope,
-    frontmatter: source.frontmatter,
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [MDXRemote, setMDXRemote] = useState<any>(null);
+
+  useEffect(() => {
+    import('next-mdx-remote').then(mod => {
+      setMDXRemote(() => mod.MDXRemote);
+    });
+  }, []);
+
+  if (!MDXRemote) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <article
       id='markdown'
       className='leading-loose font-jetbrains-light flex flex-col gap-y-3 w-full pb-20'
     >
-      <MDXRemote
-        {...(mdxSerializedContent as MDXRemoteSerializeResult)}
-        components={components}
-      />
+      <MDXRemote {...source} components={components} />
     </article>
   );
 };

@@ -1,2 +1,2 @@
-export { projects } from './projects';
+export { getProjects } from './projects';
 export type { Project } from './types';

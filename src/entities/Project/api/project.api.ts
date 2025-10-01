@@ -34,6 +34,7 @@ export const getProjectSourceBySlug = async (slug: string) => {
     console.error(`Error serializing MDX for slug ${slug}:`, error);
     return {
       compiledSource: '',
+      scope: {},
       frontmatter: {},
       project: {
         title: 'Error loading project',
