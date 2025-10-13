@@ -1,6 +1,7 @@
 import { PageHeader } from '@/shared/ui';
 import { ProjectCard } from './ui/ProjectCard';
 import { getProjects } from './model/projects';
+import '@/app/styles/markdown.css';
 
 export default async function Projects() {
   const projects = await getProjects();
