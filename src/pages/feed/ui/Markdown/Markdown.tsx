@@ -31,41 +31,58 @@ export const Markdown = ({ source }: Props) => {
   );
 };
 
+/** ===== Code blocks ===== */
+const CodeBlock = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children?: React.ReactNode;
+}) => {
+  // className 예: "language-ts" / "lang-tsx" / ""
+  const lang = (className || '').replace(/language-?|lang-?/, '') || '';
+  return (
+    <pre className='w-full overflow-x-auto rounded-lg border border-gray-300/40 bg-black/80 text-gray-100 p-4'>
+      <code className={lang ? `language-${lang}` : undefined}>{children}</code>
+    </pre>
+  );
+};
+
+const InlineCode = ({ children }: { children?: React.ReactNode }) => (
+  <code className='px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-800 font-jetbrains-medium'>
+    {children}
+  </code>
+);
+
 const components = {
   // Headings
   h2: ({ children }: { children?: React.ReactNode }) => (
-    <h2
-      id={children?.toString()}
-      className='text-[1.5rem] lg:text-3xl font-jetbrains-bold pt-4'
-    >
+    <h2 className='text-[1.5rem] lg:text-3xl font-jetbrains-bold pt-4'>
       {children}
     </h2>
   ),
   h3: ({ children }: { children?: React.ReactNode }) => (
-    <h3
-      id={children?.toString()}
-      className='text-lg lg:text-xl font-jetbrains-semibold pt-4'
-    >
+    <h3 className='text-lg lg:text-xl font-jetbrains-semibold pt-4'>
       {children}
     </h3>
   ),
   h4: ({ children }: { children?: React.ReactNode }) => (
-    <h4
-      id={children?.toString()}
-      className='text-base lg:text-lg font-jetbrains-semibold pt-4'
-    >
+    <h4 className='text-base lg:text-lg font-jetbrains-semibold pt-4'>
       {children}
     </h4>
   ),
 
-  // Lists
+  // Lists (ol에도 flex를 넣어 gap이 적용되도록)
   ul: ({ children }: { children?: React.ReactNode }) => (
     <ul className='list-disc list-inside flex flex-col gap-y-1 font-jetbrains-light'>
       {children}
     </ul>
   ),
   ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className='list-decimal list-inside font-jetbrains-light gap-y-1'>
+    <ol
+      className='list-decimal list-outside pl-8 flex flex-col gap-y-4 font-jetbrains-light 
+               [&>li>p:first-child]:inline [&>li>p:first-child]:m-0'
+    >
       {children}
     </ol>
   ),
@@ -76,12 +93,13 @@ const components = {
       target='_blank'
       href={href}
       className='inline font-jetbrains-light text-blue-500 hover:text-blue-600 hover:underline'
+      rel='noreferrer'
     >
       {children}
     </a>
   ),
 
-  // Image
+  // Image (기본 폭 제한 추가)
   img: ({
     src,
     alt,
@@ -96,7 +114,7 @@ const components = {
         src={src ?? ''}
         alt={alt ?? ''}
         width={width}
-        className={width ? '' : 'w-full'}
+        className={width ? '' : 'w-full max-w-[640px] rounded-xl'}
       />
     </span>
   ),
@@ -130,4 +148,8 @@ const components = {
       {children}
     </td>
   ),
+
+  // Code (핵심: fenced code / inline code)
+  pre: CodeBlock,
+  code: InlineCode,
 };
