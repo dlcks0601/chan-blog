@@ -31,29 +31,6 @@ export const Markdown = ({ source }: Props) => {
   );
 };
 
-/** ===== Code blocks ===== */
-const CodeBlock = ({
-  className,
-  children,
-}: {
-  className?: string;
-  children?: React.ReactNode;
-}) => {
-  // className 예: "language-ts" / "lang-tsx" / ""
-  const lang = (className || '').replace(/language-?|lang-?/, '') || '';
-  return (
-    <pre className='w-full overflow-x-auto rounded-lg border border-gray-300/40 bg-black/80 text-gray-100 p-4'>
-      <code className={lang ? `language-${lang}` : undefined}>{children}</code>
-    </pre>
-  );
-};
-
-const InlineCode = ({ children }: { children?: React.ReactNode }) => (
-  <code className='px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-800 font-jetbrains-medium'>
-    {children}
-  </code>
-);
-
 const components = {
   // Headings
   h2: ({ children }: { children?: React.ReactNode }) => (
@@ -148,8 +125,4 @@ const components = {
       {children}
     </td>
   ),
-
-  // Code (핵심: fenced code / inline code)
-  pre: CodeBlock,
-  code: InlineCode,
 };

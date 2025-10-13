@@ -88,20 +88,20 @@ Solve
 - Spring Physics 기반 움직임으로 현실감 있는 터치 반응 구현
 
 ```typescript
-// 터치 제스처 최적화
-TAP_THRESHOLD: 8,
-TAP_VELOCITY_THRESHOLD: 25,
-DRAG_SENSITIVITY: 2.0,
+  // 터치 제스처 최적화
+  TAP_THRESHOLD: 8,
+  TAP_VELOCITY_THRESHOLD: 25,
+  DRAG_SENSITIVITY: 2.0,
 
-// 제스처 충돌 해결
-panGesture.onStart(() => {
-  gestureActive.value = true;    // 제스처 상태 명확화
-})
-.onUpdate((event) => {
-  const dragDistance = isDirectionX ? event.translationY : event.translationX;
-  const dragRotation = dragDistance * DRAG_SENSITIVITY;
-  rotation.value = smoothInterpolation(dragRotation);
-})
+  // 제스처 충돌 해결
+  panGesture.onStart(() => {
+    gestureActive.value = true;    // 제스처 상태 명확화
+  })
+  .onUpdate((event) => {
+    const dragDistance = isDirectionX ? event.translationY : event.translationX;
+    const dragRotation = dragDistance * DRAG_SENSITIVITY;
+    rotation.value = smoothInterpolation(dragRotation);
+  })
 ```
 
 - Gesture Handler의 터치 이벤트 생명주기 활용

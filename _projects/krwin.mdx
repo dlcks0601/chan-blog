@@ -42,14 +42,14 @@ SSR을 적용해 검색엔진 인덱싱 성능을 높이고, next/image 최적�
    - Next.js 설정 (next.config.ts)
 
    ```typescript
-   images: {
-   formats: ['image/webp', 'image/avif'],
-   deviceSizes: [640, 750, 1080, 1920, 2048, 3840],
-   imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-   remotePatterns: [
-   { protocol: 'https', hostname: 'krwin.io', pathname: '/**' },
-   ],
-   }
+      images: {
+         formats: ['image/webp', 'image/avif'],
+         deviceSizes: [640, 750, 1080, 1920, 2048, 3840],
+         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+         remotePatterns: [
+            { protocol: 'https', hostname: 'krwin.io', pathname: '/**' },
+         ],
+      }
    ```
 
    - /public/\* 이미지는 정상 서빙되고, next/image 최적화 API도 정상 작동
