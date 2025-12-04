@@ -30,10 +30,14 @@ export function Writer({
       }, speed);
 
       return () => clearTimeout(timer);
-    } else {
-      setIsComplete(true);
+    } else if (displayIndex >= textContent.length && !isComplete) {
+      const timer = setTimeout(() => {
+        setIsComplete(true);
+      }, 0);
+
+      return () => clearTimeout(timer);
     }
-  }, [displayIndex, textContent, speed]);
+  }, [displayIndex, textContent, speed, isComplete]);
 
   if (typeof children !== 'string') {
     return <span className={className}>{children}</span>;
