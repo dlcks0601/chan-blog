@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
 import { ReactNode, useEffect, useState } from 'react';
 
@@ -44,11 +45,11 @@ export function Writer({
   }
 
   const renderHighlightedText = (text: string) => {
-    const words = text.split(/(\s+|\n)/); // 공백과 줄바꿈을 분리
+    const words = text.split(/(\s+|\n)/);
 
     return words.map((word, index) => {
       if (word === '\n') {
-        return <br key={index} />; // 줄바꿈 처리
+        return <br key={index} />;
       }
 
       const cleanWord = word.replace(/[.,!?]/g, '');
@@ -61,13 +62,13 @@ export function Writer({
       return (
         <span key={index}>
           {isHighlighted && linkUrl ? (
-            <Link href={linkUrl} target='_blank' className='underline'>
+            <Link href={linkUrl} target='_blank' className={cn('underline')}>
               {word}
             </Link>
           ) : isHighlighted ? (
-            <span className='underline'>{word}</span>
+            <span className={cn('underline')}>{word}</span>
           ) : linkUrl ? (
-            <Link href={linkUrl} target='_blank' className='underline'>
+            <Link href={linkUrl} target='_blank' className={cn('underline')}>
               {word}
             </Link>
           ) : (
@@ -83,7 +84,7 @@ export function Writer({
   return (
     <span className={className}>
       {renderHighlightedText(visibleText)}
-      {!isComplete && <span className='animate-pulse'>|</span>}
+      {!isComplete && <span className={cn('animate-pulse')}>|</span>}
     </span>
   );
 }

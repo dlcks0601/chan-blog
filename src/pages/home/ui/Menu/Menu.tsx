@@ -1,6 +1,6 @@
 import { MenuRoot } from './MenuRoot';
 import { MenuItem } from './MenuItem';
-import type { MenuProps } from './types';
+import type { MenuProps } from '../../model';
 import { cn } from '@/shared/lib/utils';
 
 function Menu({ items, className, itemClassName }: MenuProps) {

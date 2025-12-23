@@ -1,3 +1,4 @@
+import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
 
 type Props = {
@@ -14,22 +15,29 @@ export const ProjectHeader = ({
   tagColor = 'bg-amber-300',
 }: Props) => {
   return (
-    <div className='flex flex-col gap-y-1'>
-      <div className='flex items-center justify-between'>
-        <span className='text-3xl font-jetbrains-bold'>{title}</span>
+    <div className={cn('flex flex-col gap-y-1')}>
+      <div className={cn('flex items-center justify-between')}>
+        <span className={cn('text-3xl', 'font-jetbrains-bold')}>{title}</span>
         <Link
           href='/projects'
-          className='text-lg underline font-jetbrains-light'
+          className={cn('text-lg', 'underline', 'font-jetbrains-light')}
         >
           back
         </Link>
       </div>
-      <div className='flex flex-col'>
-        <span className='text-lg font-jetbrains-light'>{date}</span>
+      <div className={cn('flex flex-col')}>
+        <span className={cn('text-lg', 'font-jetbrains-light')}>{date}</span>
       </div>
       <div>
         <span
-          className={`text-sm font-jetbrains-light text-black w-fit px-1 rounded-md ${tagColor}`}
+          className={cn(
+            'text-sm',
+            'font-jetbrains-light',
+            'text-black',
+            'w-fit px-1',
+            'rounded-md',
+            tagColor
+          )}
         >
           {category}
         </span>

@@ -1,10 +1,10 @@
-// FSD v2.1: Page-specific component - only used on home page
+import { cn } from '@/shared/lib/utils';
 import { Writer } from '@/shared/ui';
 import { Menu } from '../Menu';
 
 export function DescriptionSection() {
   return (
-    <div className='flex flex-col'>
+    <div className={cn('flex flex-col')}>
       <div>
         <Menu
           itemClassName='text-[1rem] lg:text-[2rem] font-jetbrains-light'
@@ -15,7 +15,15 @@ export function DescriptionSection() {
           ]}
         />
       </div>
-      <section className='w-full pb-5 pt-5 text-white font-jetbrains-light text-[1rem] lg:text-[2rem]'>
+      <section
+        className={cn(
+          'w-full',
+          'pb-5 pt-5',
+          'text-[1rem] lg:text-[2rem]',
+          'font-jetbrains-light',
+          'text-white'
+        )}
+      >
         <Writer
           speed={60}
           highlightWords={['Creative', 'Interactive', 'Comfortable', '@Github']}

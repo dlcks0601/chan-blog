@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { cn } from '@/shared/lib/utils';
-import type { MenuItemProps } from './types';
+import type { MenuItemProps } from '../../model';
 
 export function MenuItem({ href, children, className }: MenuItemProps) {
   return (

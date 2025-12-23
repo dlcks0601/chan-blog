@@ -1,3 +1,4 @@
+import { cn } from '@/shared/lib/utils';
 import React from 'react';
 
 interface LayoutProps {
@@ -7,8 +8,10 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, className = '' }) => {
   return (
-    <div className={`h-screen w-full flex flex-col px-4 ${className}`}>
-      <div className='flex flex-col w-full h-0 grow'>{children}</div>
+    <div className={cn('h-screen w-full', 'flex flex-col', 'px-4', className)}>
+      <div className={cn('flex flex-col', 'w-full', 'h-0 grow')}>
+        {children}
+      </div>
     </div>
   );
 };

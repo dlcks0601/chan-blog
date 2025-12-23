@@ -1,3 +1,4 @@
+import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
 
 interface ProjectCardProps {
@@ -20,13 +21,25 @@ export function ProjectCard({
   return (
     <Link
       href={`/projects/${slug}`}
-      className='flex flex-col gap-2 cursor-pointer hover:opacity-80 transition-opacity'
+      className={cn(
+        'flex flex-col gap-2',
+        'cursor-pointer',
+        'hover:opacity-80',
+        'transition-opacity'
+      )}
     >
       <img src={imageSrc} alt={imageAlt} />
-      <div className='flex flex-col gap-1'>
-        <div className='text-lg font-jetbrains'>{title}</div>
+      <div className={cn('flex flex-col gap-1')}>
+        <div className={cn('text-lg', 'font-jetbrains')}>{title}</div>
         <div
-          className={`text-sm font-jetbrains-light text-black w-fit px-1 rounded-md ${tagColor}`}
+          className={cn(
+            'text-sm',
+            'font-jetbrains-light',
+            'text-black',
+            'w-fit px-1',
+            'rounded-md',
+            tagColor
+          )}
         >
           {category}
         </div>

@@ -1,3 +1,4 @@
+import { cn } from '@/shared/lib/utils';
 import { ReactNode } from 'react';
 import { metadata } from '@/app/config/metadata';
 import { Layout } from '@/shared/ui';
@@ -8,7 +9,7 @@ export { metadata };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='ko'>
-      <body className='bg-[#131313] text-white'>
+      <body className={cn('bg-[#131313]', 'text-white')}>
         <Layout>{children}</Layout>
       </body>
     </html>

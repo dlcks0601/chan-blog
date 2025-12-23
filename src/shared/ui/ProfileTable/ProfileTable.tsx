@@ -1,3 +1,5 @@
+import { cn } from '@/shared/lib/utils';
+
 export interface ProfileData {
   name: string;
   birthDate?: string;
@@ -19,35 +21,56 @@ export function ProfileTable({
 
   return (
     <div className={className}>
-      {/* 헤더 */}
-      <div className='grid grid-cols-2 lg:grid-cols-4 pb-4'>
-        <div className='font-jetbrains-light text-sm lg:text-base'>NAME</div>
-        <div className='font-jetbrains-light text-sm lg:text-base'>
+      <div className={cn('grid grid-cols-2 lg:grid-cols-4', 'pb-4')}>
+        <div className={cn('text-sm lg:text-base', 'font-jetbrains-light')}>
+          NAME
+        </div>
+        <div className={cn('text-sm lg:text-base', 'font-jetbrains-light')}>
           POSITION
         </div>
-        <div className='font-jetbrains-light text-sm lg:text-base'>
+        <div className={cn('text-sm lg:text-base', 'font-jetbrains-light')}>
           DESCRIPTION
         </div>
-        <div className='font-jetbrains-light text-sm lg:text-base'>CONTACT</div>
+        <div className={cn('text-sm lg:text-base', 'font-jetbrains-light')}>
+          CONTACT
+        </div>
       </div>
 
-      {/* 데이터 */}
-      <div className='grid grid-cols-2 lg:grid-cols-4 border-t pt-4 min-h-40'>
-        <div className='flex flex-col gap-1'>
-          <div className='font-jetbrains-bold'>{name}</div>
+      <div
+        className={cn(
+          'grid grid-cols-2 lg:grid-cols-4',
+          'border-t',
+          'pt-4',
+          'min-h-40'
+        )}
+      >
+        <div className={cn('flex flex-col gap-1')}>
+          <div className={cn('font-jetbrains-bold')}>{name}</div>
           {birthDate && (
-            <div className='font-jetbrains-light text-sm lg:text-base'>
+            <div className={cn('text-sm lg:text-base', 'font-jetbrains-light')}>
               {birthDate}
             </div>
           )}
         </div>
-        <div className='font-jetbrains-light text-sm lg:text-base'>
+        <div className={cn('text-sm lg:text-base', 'font-jetbrains-light')}>
           {position}
         </div>
-        <div className='font-jetbrains-light text-sm lg:text-base pr-10'>
+        <div
+          className={cn(
+            'text-sm lg:text-base',
+            'font-jetbrains-light',
+            'pr-10'
+          )}
+        >
           {description}
         </div>
-        <div className='font-jetbrains-light text-sm lg:text-base underline'>
+        <div
+          className={cn(
+            'text-sm lg:text-base',
+            'font-jetbrains-light',
+            'underline'
+          )}
+        >
           {contact}
         </div>
       </div>
