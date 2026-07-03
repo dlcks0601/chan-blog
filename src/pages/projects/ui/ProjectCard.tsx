@@ -1,22 +1,15 @@
 import { cn } from '@/shared/lib/utils';
 import Link from 'next/link';
+import type { ProjectSummary } from '@/pages/projects/model/types';
 
-interface ProjectCardProps {
-  slug: string;
-  imageSrc: string;
-  imageAlt: string;
-  title: string;
-  category: string;
-  tagColor?: string;
-}
+type ProjectCardProps = ProjectSummary;
 
 export function ProjectCard({
   slug,
-  imageSrc,
-  imageAlt,
   title,
-  category,
-  tagColor,
+  date,
+  cover,
+  stack,
 }: ProjectCardProps) {
   return (
     <Link
@@ -28,20 +21,29 @@ export function ProjectCard({
         'transition-opacity'
       )}
     >
-      <img src={imageSrc} alt={imageAlt} />
+      <img
+        src={cover.src}
+        alt={cover.alt}
+        className={cn('w-full rounded-lg border border-white/10')}
+      />
       <div className={cn('flex flex-col gap-1')}>
         <div className={cn('text-lg', 'font-jetbrains')}>{title}</div>
-        <div
-          className={cn(
-            'text-sm',
-            'font-jetbrains-light',
-            'text-black',
-            'w-fit px-1',
-            'rounded-md',
-            tagColor
-          )}
-        >
-          {category}
+        <div className={cn('text-xs text-white/45', 'font-jetbrains-light')}>
+          {date}
+        </div>
+        <div className={cn('mt-0.5 flex flex-wrap gap-1')}>
+          {stack.slice(0, 3).map(tech => (
+            <span
+              key={tech}
+              className={cn(
+                'rounded-full border border-white/12 bg-white/[0.06] px-2 py-0.5',
+                'text-[10px] text-white/60',
+                'font-jetbrains-light'
+              )}
+            >
+              {tech}
+            </span>
+          ))}
         </div>
       </div>
     </Link>

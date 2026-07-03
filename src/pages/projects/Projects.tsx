@@ -1,26 +1,17 @@
 import { cn } from '@/shared/lib/utils';
 import { PageHeader } from '@/shared/ui';
 import { ProjectCard } from './ui/ProjectCard';
-import { getProjects } from './model/projects';
-import '@/app/styles/markdown.css';
+import { getProjectSummaries } from './model/projects';
 
-export default async function Projects() {
-  const projects = await getProjects();
+export default function Projects() {
+  const projects = getProjectSummaries();
 
   return (
     <div>
       <PageHeader title='Projects' />
       <div className={cn('grid grid-cols-2 lg:grid-cols-4', 'pt-2', 'gap-4')}>
         {projects.map(project => (
-          <ProjectCard
-            key={project.slug}
-            slug={project.slug}
-            imageSrc={project.imageSrc}
-            imageAlt={project.imageAlt}
-            title={project.title}
-            category={project.category}
-            tagColor={project.tagColor}
-          />
+          <ProjectCard key={project.slug} {...project} />
         ))}
       </div>
     </div>

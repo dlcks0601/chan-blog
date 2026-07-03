@@ -39,9 +39,9 @@ export function ProfileTable({
       <div
         className={cn(
           'grid grid-cols-2 lg:grid-cols-4',
+          'gap-y-6 lg:gap-y-0',
           'border-t',
-          'pt-4',
-          'min-h-40'
+          'pt-4'
         )}
       >
         <div className={cn('flex flex-col gap-1')}>

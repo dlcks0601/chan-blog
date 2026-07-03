@@ -14,7 +14,10 @@ export default function MePage() {
   return (
     <div className={cn('flex flex-col')}>
       <PageHeader title='Me' />
-      <ProfileTable profileData={meProfileData} className='pt-4' />
+      <ProfileTable
+        profileData={meProfileData}
+        className='pt-4 pb-20 lg:pb-28'
+      />
       <div className={cn('border-t', 'py-4')}>
         <h1 className={cn('text-sm lg:text-base', 'font-jetbrains-light')}>
           Career

@@ -1,16 +1,12 @@
-import { getProjectSlugs } from '@/entities/Project/api/project.api';
+import { getProjectSlugs } from '@/pages/projects/model/projects';
 import ProjectDetailPage from '@/pages/projects/ui/ProjectDetailPage';
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateStaticParams() {
-  const slugs = getProjectSlugs();
-
-  return slugs.map(slug => ({
-    slug,
-  }));
+export function generateStaticParams() {
+  return getProjectSlugs().map(slug => ({ slug }));
 }
 
 export default async function Page({ params }: Props) {
