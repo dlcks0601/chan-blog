@@ -133,28 +133,12 @@ body {
   }
 }
 
-/* 마크가 도는 동안 글자는 정방향을 유지하도록 같은 주기로 역회전시킨다. */
-@keyframes logo-counterspin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(-360deg);
-  }
-}
-
 .animate-logo-spin {
   animation: logo-spin 14s linear infinite;
 }
 
-.animate-logo-counterspin {
-  transform-box: view-box;
-  animation: logo-counterspin 14s linear infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-logo-spin,
-  .animate-logo-counterspin {
+  .animate-logo-spin {
     animation: none;
   }
 }
