@@ -2,90 +2,52 @@ import type { CSSProperties } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 /**
- * 3회 대칭 장식 문양.
+ * 네 갈래 끝이 원인 십자 마크.
  *
- * 100x100 좌표계, 중심 (50,50). 팔메트 부채꼴 3개와 오목한 칼날 3개가 60도씩
- * 번갈아 놓인다. 잎은 각도 폭을 고정(반각 5.2도)해 머리 반지름을 역산하므로
- * 어느 잎도 이웃과 겹치지 않고 사이에 여백이 남는다.
+ * 48x48 좌표계에서 팁 원(중심 거리 16.5 / 반지름 7)과 중앙 원(반지름 5)을
+ * 대각선의 오목 원(중심 거리 9.814 / 반지름 4.814)으로 이어 붙인다.
+ * 오목 원을 팁 원과 중앙 원 양쪽에 외접시켰기 때문에 모든 이음매가 접선으로
+ * 만나 외곽선에 각이 생기지 않는다. 팔의 폭(8.224)은 오목 원과 팁 원의
+ * 접점에서 구한 값으로, 직선부가 원 밖으로 삐져나오지 않는 최대치다.
  */
-const CENTER = 50;
-const DEG = Math.PI / 180;
-
-const PETAL_HALF_DEG = 5.2;
-const PETAL_TIP = 12;
-
-/** 부채꼴 한 벌: 각도 오프셋과 머리 중심까지의 거리. */
-const FAN = [
-  { angle: 0, reach: 34 },
-  { angle: -12, reach: 32 },
-  { angle: 12, reach: 32 },
-  { angle: -24, reach: 29 },
-  { angle: 24, reach: 29 },
-  { angle: -36, reach: 24 },
-  { angle: 36, reach: 24 },
-];
-
-const FAN_ANGLES = [0, 120, 240];
-const BLADE_ANGLES = [60, 180, 300];
-
-/** 바깥은 둥근 머리, 안쪽은 뾰족하게 좁아지는 물방울 잎. */
-function petalPath(reach: number) {
-  const q = reach * Math.sin(PETAL_HALF_DEG * DEG);
-  const headY = CENTER - reach;
-  const tipY = CENTER - PETAL_TIP;
-  const span = tipY - headY;
-  return [
-    `M ${CENTER} ${tipY}`,
-    `C ${CENTER + q * 0.5} ${tipY - span * 0.5} ${CENTER + q} ${headY + q * 0.7} ${CENTER + q} ${headY}`,
-    `A ${q} ${q} 0 0 0 ${CENTER - q} ${headY}`,
-    `C ${CENTER - q} ${headY + q * 0.7} ${CENTER - q * 0.5} ${tipY - span * 0.5} ${CENTER} ${tipY}`,
-    'Z',
-  ].join(' ');
-}
-
-/** 바깥 모서리가 안으로 파여 두 뿔이 생기는 칼날. */
-const BLADE_PATH = [
-  `M ${CENTER} 37`,
-  `C ${CENTER + 7.7} 27.55 ${CENTER + 14} 21 ${CENTER + 14} 10`,
-  `Q ${CENTER} 26 ${CENTER - 14} 10`,
-  `C ${CENTER - 14} 21 ${CENTER - 7.7} 27.55 ${CENTER} 37`,
-  'Z',
-].join(' ');
-
 interface LogoMarkProps {
   className?: string;
   style?: CSSProperties;
-  /** 120도씩 돌고 쉬기를 반복할지 여부. */
+  /** 90도씩 돌고 쉬기를 반복할지 여부. */
   spin?: boolean;
 }
 
 export function LogoMark({ className, style, spin = false }: LogoMarkProps) {
   return (
     <svg
-      viewBox='0 0 100 100'
+      viewBox='0 0 48 48'
+      fill='none'
       aria-hidden
       style={style}
       className={cn('h-6 w-6', spin && 'animate-logo-spin', className)}
     >
-      <g fill='currentColor'>
-        {BLADE_ANGLES.map(angle => (
-          <path
-            key={`blade-${angle}`}
-            transform={`rotate(${angle} ${CENTER} ${CENTER})`}
-            d={BLADE_PATH}
-          />
-        ))}
-        {FAN_ANGLES.map(base =>
-          FAN.map(petal => (
-            <path
-              key={`petal-${base}-${petal.angle}-${petal.reach}`}
-              transform={`rotate(${base + petal.angle} ${CENTER} ${CENTER})`}
-              d={petalPath(petal.reach)}
-            />
-          ))
-        )}
-        <ellipse cx={CENTER} cy={CENTER} rx='5.5' ry='6.5' />
-      </g>
+      <mask
+        id='logo-mark'
+        maskUnits='userSpaceOnUse'
+        x='0'
+        y='0'
+        width='48'
+        height='48'
+      >
+        <rect width='48' height='48' fill='black' />
+        <rect x='7.5' y='19.888' width='33' height='8.224' fill='white' />
+        <rect x='19.888' y='7.5' width='8.224' height='33' fill='white' />
+        <circle cx='24' cy='7.5' r='7' fill='white' />
+        <circle cx='40.5' cy='24' r='7' fill='white' />
+        <circle cx='24' cy='40.5' r='7' fill='white' />
+        <circle cx='7.5' cy='24' r='7' fill='white' />
+        <circle cx='24' cy='24' r='5' fill='white' />
+        <circle cx='30.939' cy='17.061' r='4.814' fill='black' />
+        <circle cx='30.939' cy='30.939' r='4.814' fill='black' />
+        <circle cx='17.061' cy='30.939' r='4.814' fill='black' />
+        <circle cx='17.061' cy='17.061' r='4.814' fill='black' />
+      </mask>
+      <rect width='48' height='48' fill='currentColor' mask='url(#logo-mark)' />
     </svg>
   );
 }
