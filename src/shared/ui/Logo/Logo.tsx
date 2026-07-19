@@ -1,25 +1,29 @@
-import Link from 'next/link';
-import { cn } from '@/shared/lib/utils';
+'use client';
 
-const MARK_ANGLES = [0, 45, 90, 135];
+import Link from 'next/link';
+import { useState } from 'react';
+import { cn } from '@/shared/lib/utils';
+import { LogoMark } from './LogoMark';
+
+/** 마크가 4회 대칭이라 90도씩 돌면 제자리로 떨어진다. */
+const TURN_DEGREES = 90;
 
 export function Logo() {
+  const [turns, setTurns] = useState(0);
+
   return (
-    <Link href='/' className={cn('inline-flex flex-col')}>
-      <div className={cn('relative h-6 w-6', 'text-white')}>
-        {MARK_ANGLES.map(angle => (
-          <div
-            key={angle}
-            className={cn(
-              'absolute inset-0',
-              'flex items-center justify-center'
-            )}
-            style={{ transform: `rotate(${angle}deg)` }}
-          >
-            <div className={cn('h-px w-full', 'bg-current')} />
-          </div>
-        ))}
-      </div>
+    <Link
+      href='/'
+      onMouseEnter={() => setTurns(current => current + 1)}
+      className={cn('inline-flex flex-col')}
+    >
+      <LogoMark
+        style={{ transform: `rotate(${turns * TURN_DEGREES}deg)` }}
+        className={cn(
+          'transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]',
+          'motion-reduce:transition-none'
+        )}
+      />
       <h1>@leechan</h1>
     </Link>
   );
