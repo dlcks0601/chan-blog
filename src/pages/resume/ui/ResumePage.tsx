@@ -12,7 +12,7 @@ function ProfileRow({ label, value }: { label: string; value: string }) {
     <div
       className={cn(
         'grid gap-x-10',
-        'grid-cols-[1fr_4fr] md:grid-cols-[1fr_5fr]'
+        'grid-cols-[5.5rem_1fr] md:grid-cols-[1fr_5fr]'
       )}
     >
       <span className={cn('text-neutral-500')}>{label} /</span>
@@ -26,8 +26,8 @@ export function ResumePage() {
     <main className={cn('flex flex-col', 'py-10')}>
       <div
         className={cn(
-          'grid gap-x-10',
-          'grid-cols-[1fr_4fr] md:grid-cols-[1fr_3fr_2fr]'
+          'flex flex-col',
+          'md:grid md:gap-x-10 md:grid-cols-[1fr_3fr_2fr]'
         )}
       >
         <div>

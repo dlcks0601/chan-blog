@@ -10,15 +10,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, className = '' }) => {
   return (
     <div
       className={cn(
-        'h-screen w-full',
+        'min-h-screen w-full',
         'flex flex-col',
         'px-4 lg:px-8',
         className
       )}
     >
-      <div className={cn('flex flex-col', 'w-full', 'h-0 grow')}>
-        {children}
-      </div>
+      <div className={cn('flex flex-col', 'w-full', 'grow')}>{children}</div>
     </div>
   );
 };

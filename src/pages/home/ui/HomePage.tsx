@@ -3,7 +3,7 @@ import { Logo, SiteNav, SocialLinks, Writer } from '@/shared/ui';
 
 export function HomePage() {
   return (
-    <main className={cn('h-full', 'flex flex-col justify-between', 'py-10')}>
+    <main className={cn('grow', 'flex flex-col justify-between', 'py-10')}>
       <div
         className={cn(
           'grid gap-x-10',
@@ -17,11 +17,11 @@ export function HomePage() {
         <p>
           <Writer
             speed={40}
-            highlightWords={['@Github']}
+            highlightWords={['Creative', 'Interactive', '@Github']}
             links={{ '@Github': 'https://github.com/dlcks0601' }}
           >
             {
-              "Hello, I'm a Frontend Developer @Github.\nBuild anything. For users."
+              "Hello, I'm a Frontend Developer @Github.\nBuild anything. For users.\nInterested in creative and interactive websites and apps."
             }
           </Writer>
         </p>

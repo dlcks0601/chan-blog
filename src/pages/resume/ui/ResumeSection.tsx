@@ -26,23 +26,25 @@ export function ResumeSection({ career }: ResumeSectionProps) {
         </div>
         {career.projects.map(project => (
           <div key={project.name} className={cn('flex flex-col gap-2')}>
-            <div className={cn('flex items-baseline gap-3')}>
-              {project.link ? (
-                <a
-                  href={project.link}
-                  target='_blank'
-                  rel='noreferrer'
-                  className={cn('font-medium underline')}
-                >
-                  {project.name}
-                </a>
-              ) : (
-                <h3 className={cn('font-medium')}>{project.name}</h3>
-              )}
-              <span className={cn('text-xs text-neutral-500', 'font-mono')}>
-                {project.period}
-              </span>
-            </div>
+            {project.name !== career.company && (
+              <div className={cn('flex items-baseline gap-3')}>
+                {project.link ? (
+                  <a
+                    href={project.link}
+                    target='_blank'
+                    rel='noreferrer'
+                    className={cn('font-medium underline')}
+                  >
+                    {project.name}
+                  </a>
+                ) : (
+                  <h3 className={cn('font-medium')}>{project.name}</h3>
+                )}
+                <span className={cn('text-xs text-neutral-500', 'font-mono')}>
+                  {project.period}
+                </span>
+              </div>
+            )}
             <ul className={cn('flex flex-col gap-1', 'pl-4')}>
               {project.achievements.map(achievement => (
                 <li
