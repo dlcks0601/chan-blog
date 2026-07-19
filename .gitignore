@@ -42,3 +42,6 @@ next-env.d.ts
 
 # superpowers brainstorm companion artifacts
 .superpowers/
+
+# playwright mcp artifacts
+.playwright-mcp/

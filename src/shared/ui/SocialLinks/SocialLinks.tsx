@@ -5,9 +5,13 @@ const SOCIALS = [
   { label: 'Email', href: 'mailto:comfyofmymind@gmail.com' },
 ];
 
-export function SocialLinks() {
+interface SocialLinksProps {
+  className?: string;
+}
+
+export function SocialLinks({ className }: SocialLinksProps) {
   return (
-    <div className={cn('flex flex-col')}>
+    <div className={cn('flex flex-col', className)}>
       {SOCIALS.map(social => (
         <a
           key={social.label}
