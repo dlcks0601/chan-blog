@@ -1,0 +1,24 @@
+import { cn } from '@/shared/lib/utils';
+
+const SOCIALS = [
+  { label: 'Github', href: 'https://github.com/dlcks0601' },
+  { label: 'Email', href: 'mailto:comfyofmymind@gmail.com' },
+];
+
+export function SocialLinks() {
+  return (
+    <div className={cn('flex flex-col')}>
+      {SOCIALS.map(social => (
+        <a
+          key={social.label}
+          href={social.href}
+          target='_blank'
+          rel='noreferrer'
+          className={cn('w-fit', 'hover:underline')}
+        >
+          {social.label}
+        </a>
+      ))}
+    </div>
+  );
+}
