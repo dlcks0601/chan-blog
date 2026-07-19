@@ -18,7 +18,12 @@ function ProfileHeader() {
         <div>Contact /</div>
       </div>
       <div className={cn(PROFILE_GRID, 'min-h-20 pt-1 text-xs')}>
-        <div className={cn('font-semibold')}>{resumeProfile.name}</div>
+        <div>
+          <div className={cn('font-semibold')}>{resumeProfile.name}</div>
+          <div className={cn('text-neutral-400')}>
+            {resumeProfile.birthDate}
+          </div>
+        </div>
         <div>{resumeProfile.position}</div>
         <a
           href={`mailto:${resumeProfile.email}`}

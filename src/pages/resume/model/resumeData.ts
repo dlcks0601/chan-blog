@@ -16,6 +16,7 @@ export interface ResumeEntry {
 
 export const resumeProfile = {
   name: '이찬',
+  birthDate: '1999.06.01',
   position: 'Frontend Developer',
   email: 'comfyofmymind@gmail.com',
 };
