@@ -1,16 +1,33 @@
-// FSD v2.1: Pages First approach - page-specific components stay in the page slice
 import { cn } from '@/shared/lib/utils';
-import { HeroSection, DescriptionSection } from './components';
+import { Logo, SiteNav, SocialLinks, Writer } from '@/shared/ui';
 
 export function HomePage() {
   return (
-    <>
-      <div className={cn('flex flex-col', 'h-full w-full', 'relative z-10')}>
-        <div className={cn('flex flex-col', 'w-full')}>
-          <HeroSection />
-          <DescriptionSection />
+    <main className={cn('h-full', 'flex flex-col justify-between', 'py-10')}>
+      <div
+        className={cn(
+          'grid gap-x-10',
+          'grid-cols-[1fr_4fr] md:grid-cols-[1fr_3fr_2fr]'
+        )}
+      >
+        <div>
+          <Logo />
+          <SiteNav className={cn('flex md:hidden', 'pt-10 text-sm')} />
         </div>
+        <p>
+          <Writer
+            speed={40}
+            highlightWords={['@Github']}
+            links={{ '@Github': 'https://github.com/dlcks0601' }}
+          >
+            {
+              "Hello, I'm a Frontend Developer @Github.\nBuild anything. For users."
+            }
+          </Writer>
+        </p>
+        <SiteNav className={cn('hidden md:flex')} />
       </div>
-    </>
+      <SocialLinks />
+    </main>
   );
 }
