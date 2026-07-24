@@ -1,10 +1,6 @@
 import { cn } from '@/shared/lib/utils';
 import { PageShell } from '@/shared/ui';
-import {
-  resumeCareers,
-  resumeProfile,
-  resumeSideProjects,
-} from '../model/resumeData';
+import { resumeCareers, resumeProfile } from '../model/resumeData';
 import { ResumeEntry } from './ResumeEntry';
 
 const PROFILE_GRID = 'grid grid-cols-2 md:grid-cols-4';
@@ -43,12 +39,6 @@ export function ResumePage() {
         <ProfileHeader />
         <div className={cn('flex flex-col')}>
           {resumeCareers.map(entry => (
-            <ResumeEntry key={entry.title} entry={entry} />
-          ))}
-        </div>
-        <div className={cn('flex flex-col')}>
-          <div className={cn('pb-2 text-xs text-neutral-500')}>Projects /</div>
-          {resumeSideProjects.map(entry => (
             <ResumeEntry key={entry.title} entry={entry} />
           ))}
         </div>

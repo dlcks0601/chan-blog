@@ -1,11 +1,9 @@
 import Link from 'next/link';
 import { cn } from '@/shared/lib/utils';
-import { LogoMark } from './LogoMark';
 
 export function Logo() {
   return (
-    <Link href='/' className={cn('inline-flex flex-col')}>
-      <LogoMark spin />
+    <Link href='/' className={cn('inline-flex')}>
       <h1>@leechan</h1>
     </Link>
   );
