@@ -24,6 +24,7 @@ export const resumeProfile = {
 export const resumeCareers: ResumeEntry[] = [
   {
     title: 'Lukuku',
+    link: 'https://lukuku.co',
     subtitle: 'Frontend Developer · Design Lead',
     period: '2025.12 - present',
     projects: [
