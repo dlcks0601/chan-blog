@@ -9,7 +9,7 @@ export { metadata };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='ko'>
-      <body className={cn('bg-[#131313]', 'text-white')}>
+      <body className={cn('bg-[#131313] text-white', 'font-sans antialiased')}>
         <Layout>{children}</Layout>
       </body>
     </html>
