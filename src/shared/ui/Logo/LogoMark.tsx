@@ -1,53 +1,29 @@
-import type { CSSProperties } from 'react';
+import { LEGACY_LETTERS, LEGACY_MARK_POSITIONS } from '@/shared/config';
 import { cn } from '@/shared/lib/utils';
+import { PixelGlyph } from './PixelGlyph';
 
-/**
- * 네 갈래 끝이 원인 십자 마크.
- *
- * 48x48 좌표계에서 팁 원(중심 거리 16.5 / 반지름 7)과 중앙 원(반지름 4)을
- * 대각선의 오목 원(중심 거리 8.974 / 반지름 4.974)으로 이어 붙인다.
- * 오목 원을 팁 원과 중앙 원 양쪽에 외접시켰기 때문에 모든 이음매가 접선으로
- * 만나 외곽선에 각이 생기지 않는다. 팔의 폭(7.419)은 오목 원과 팁 원의
- * 접점에서 구한 값으로, 직선부가 원 밖으로 삐져나오지 않는 최대치다.
- */
 interface LogoMarkProps {
   className?: string;
-  style?: CSSProperties;
-  /** 90도씩 돌고 쉬기를 반복할지 여부. */
-  spin?: boolean;
 }
 
-export function LogoMark({ className, style, spin = false }: LogoMarkProps) {
+/**
+ * legacy 심볼 — 픽셀 글자 l·e·g·a·c·y 를 10×11 격자에 겹쳐 놓은 것.
+ *
+ * 한 칸이 정수 픽셀로 떨어져야 선이 고르게 보이므로 높이는 11의 배수로만 쓴다
+ * (기본 22px = 칸당 2px). app/icon.svg 같은 파비콘도 같은 모양이다.
+ */
+export function LogoMark({ className }: LogoMarkProps) {
   return (
     <svg
-      viewBox='0 0 48 48'
-      fill='none'
+      viewBox='0 0 10 11'
+      shapeRendering='crispEdges'
       aria-hidden
-      style={style}
-      className={cn('h-6 w-6', spin && 'animate-logo-spin', className)}
+      className={cn('h-5.5 w-5', className)}
     >
-      <mask
-        id='logo-mark'
-        maskUnits='userSpaceOnUse'
-        x='0'
-        y='0'
-        width='48'
-        height='48'
-      >
-        <rect width='48' height='48' fill='black' />
-        <rect x='7.5' y='20.29' width='33' height='7.419' fill='white' />
-        <rect x='20.29' y='7.5' width='7.419' height='33' fill='white' />
-        <circle cx='24' cy='7.5' r='7' fill='white' />
-        <circle cx='40.5' cy='24' r='7' fill='white' />
-        <circle cx='24' cy='40.5' r='7' fill='white' />
-        <circle cx='7.5' cy='24' r='7' fill='white' />
-        <circle cx='24' cy='24' r='4' fill='white' />
-        <circle cx='30.346' cy='17.654' r='4.974' fill='black' />
-        <circle cx='30.346' cy='30.346' r='4.974' fill='black' />
-        <circle cx='17.654' cy='30.346' r='4.974' fill='black' />
-        <circle cx='17.654' cy='17.654' r='4.974' fill='black' />
-      </mask>
-      <rect width='48' height='48' fill='currentColor' mask='url(#logo-mark)' />
+      {LEGACY_LETTERS.map(letter => {
+        const [x, y] = LEGACY_MARK_POSITIONS[letter];
+        return <PixelGlyph key={letter} letter={letter} x={x} y={y} />;
+      })}
     </svg>
   );
 }

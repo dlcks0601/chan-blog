@@ -1,6 +1,6 @@
-export { Writer } from './Writer';
 export { Layout } from './Layout';
-export { Logo } from './Logo';
+export { Logo, MarkIconImage, PixelGlyph } from './Logo';
 export { SiteNav } from './SiteNav';
 export { SocialLinks } from './SocialLinks';
-export { PageShell } from './PageShell';
+export { Signature } from './Signature';
+export { TextLink } from './TextLink';

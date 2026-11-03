@@ -1,76 +1,59 @@
 import { cn } from '@/shared/lib/utils';
+import { TextLink } from '@/shared/ui';
 import type { ResumeEntry as Entry } from '../model/resumeData';
 
 interface ResumeEntryProps {
   entry: Entry;
 }
 
+/**
+ * 회사 한 곳. 9칸 중 왼쪽 2칸은 회사, 나머지 7칸은 프로젝트(이름 2칸 · 성과 5칸) —
+ * 모두 같은 간격이라 위의 Name · Position · Contact 와 세로줄이 맞는다.
+ */
 export function ResumeEntry({ entry }: ResumeEntryProps) {
   return (
-    <div className={cn('grid md:grid-cols-[1fr_3fr]', 'gap-x-4 pt-2')}>
-      <div>
-        <h2 className={cn('pt-2 text-sm')}>
+    <section className={cn('grid gap-x-gutter gap-y-6 lg:grid-cols-9')}>
+      <header className={cn('lg:col-span-2')}>
+        <h2>
           {entry.link ? (
-            <a
-              href={entry.link}
-              target='_blank'
-              rel='noreferrer'
-              className={cn('underline')}
-            >
-              {entry.title}
-            </a>
+            <TextLink href={entry.link}>{entry.title}</TextLink>
           ) : (
             entry.title
           )}
         </h2>
-        {entry.subtitle && (
-          <div className={cn('text-xs text-neutral-400')}>{entry.subtitle}</div>
-        )}
-        <div className={cn('pt-2 text-xs text-neutral-400')}>
-          {entry.period}
-        </div>
-      </div>
-      <div>
+        {entry.subtitle && <p className={cn('text-muted')}>{entry.subtitle}</p>}
+        <p className={cn('text-muted')}>{entry.period}</p>
+      </header>
+
+      <div className={cn('flex flex-col gap-y-6 lg:col-span-7')}>
         {entry.projects.map(project => (
-          <div
+          <article
             key={project.name}
-            className={cn('grid md:grid-cols-[1fr_2fr]', 'gap-4 py-4')}
+            className={cn('grid gap-x-gutter gap-y-2 lg:grid-cols-7')}
           >
-            <div>
-              <div className={cn('text-sm')}>
+            <div className={cn('lg:col-span-2')}>
+              <h3>
                 {project.link ? (
-                  <a
-                    href={project.link}
-                    target='_blank'
-                    rel='noreferrer'
-                    className={cn('underline')}
-                  >
-                    {project.name}
-                  </a>
+                  <TextLink href={project.link}>{project.name}</TextLink>
                 ) : (
                   project.name
                 )}
-              </div>
-              <div className={cn('text-xs text-neutral-400')}>
-                {project.period}
-              </div>
+              </h3>
+              <p className={cn('text-muted')}>{project.period}</p>
             </div>
-            <ul
-              className={cn(
-                "list-['-'] list-inside",
-                'flex flex-col gap-y-1.5',
-                'text-xs text-neutral-300'
-              )}
-            >
+            <ul className={cn('lg:col-span-5')}>
               {project.achievements.map(achievement => (
-                <li key={achievement} className={cn('pl-1')}>
-                  {achievement}
+                <li key={achievement} className={cn('flex gap-x-2')}>
+                  <span aria-hidden className={cn('text-muted')}>
+                    –
+                  </span>
+                  <span>{achievement}</span>
                 </li>
               ))}
             </ul>
-          </div>
+          </article>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

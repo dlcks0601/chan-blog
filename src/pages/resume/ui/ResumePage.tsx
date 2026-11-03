@@ -1,48 +1,43 @@
 import { cn } from '@/shared/lib/utils';
-import { PageShell } from '@/shared/ui';
+import { TextLink } from '@/shared/ui';
+import { SiteFrame } from '@/widgets/site-frame';
 import { resumeCareers, resumeProfile } from '../model/resumeData';
 import { ResumeEntry } from './ResumeEntry';
 
-const PROFILE_GRID = 'grid grid-cols-2 md:grid-cols-4';
-
-function ProfileHeader() {
+/** 이름 · 포지션 · 연락처 — 흐린 이름표 아래에 값을 둔다. */
+function Profile() {
   return (
-    <div>
-      <div className={cn(PROFILE_GRID, 'pb-2 text-xs text-neutral-500')}>
-        <div>ID /</div>
-        <div>Position /</div>
-        <div>Contact /</div>
+    <dl className={cn('grid grid-cols-2 gap-x-gutter gap-y-6 lg:grid-cols-9')}>
+      <div className={cn('lg:col-span-2')}>
+        <dt className={cn('text-muted')}>Name</dt>
+        <dd>{resumeProfile.name}</dd>
       </div>
-      <div className={cn(PROFILE_GRID, 'min-h-20 pt-1 text-xs')}>
-        <div>
-          <div className={cn('font-semibold')}>{resumeProfile.name}</div>
-          <div className={cn('text-neutral-400')}>
-            {resumeProfile.birthDate}
-          </div>
-        </div>
-        <div>{resumeProfile.position}</div>
-        <a
-          href={`mailto:${resumeProfile.email}`}
-          className={cn('w-fit underline')}
-        >
-          {resumeProfile.email}
-        </a>
+      <div className={cn('lg:col-span-2')}>
+        <dt className={cn('text-muted')}>Position</dt>
+        <dd>{resumeProfile.position}</dd>
       </div>
-    </div>
+      <div className={cn('col-span-2 lg:col-span-5')}>
+        <dt className={cn('text-muted')}>Contact</dt>
+        <dd>
+          <TextLink href={`mailto:${resumeProfile.email}`}>
+            {resumeProfile.email}
+          </TextLink>
+        </dd>
+      </div>
+    </dl>
   );
 }
 
+/** 로고 · 연락처가 있는 왼쪽 줄을 비워 두고, 머리말 높이에서 바로 시작한다. */
 export function ResumePage() {
   return (
-    <PageShell>
-      <div className={cn('flex flex-col gap-y-8', 'w-full pt-3')}>
-        <ProfileHeader />
-        <div className={cn('flex flex-col')}>
-          {resumeCareers.map(entry => (
-            <ResumeEntry key={entry.title} entry={entry} />
-          ))}
-        </div>
+    <SiteFrame layout='inset'>
+      <div className={cn('flex flex-col gap-y-section')}>
+        <Profile />
+        {resumeCareers.map(entry => (
+          <ResumeEntry key={entry.title} entry={entry} />
+        ))}
       </div>
-    </PageShell>
+    </SiteFrame>
   );
 }

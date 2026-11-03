@@ -12,7 +12,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, className = '' }) => {
       className={cn(
         'min-h-screen w-full',
         'flex flex-col',
-        'px-4 lg:px-8',
+        'px-gutter',
         className
       )}
     >
