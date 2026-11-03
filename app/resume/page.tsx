@@ -1,7 +1,7 @@
 import { ResumePage } from '@/pages/resume';
 
 export const metadata = {
-  title: '@leechan — Resume',
+  title: 'legacy — Resume',
 };
 
 export default function Resume() {

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Next.js 15 application with TypeScript, Tailwind CSS, and Framer Motion. The project uses App Router architecture with `src/` directory structure and includes comprehensive development tooling for code quality and consistent commits.
+**legacy** (@leechan) — a personal space for things left behind. Next.js 16 application with TypeScript and Tailwind CSS 4, App Router with a `src/` directory, and tooling for code quality and consistent commits. See **Design System** below before touching any styling.
 
 ## Architecture
 
@@ -21,16 +21,26 @@ The project follows **Feature-Sliced Design (FSD) v2.1** architecture with Next.
 - **`src/shared/`**: Expanded shared layer with application-aware configs
   - `src/shared/ui/`: Shared UI components (button, input, modal)
   - `src/shared/lib/`: Utility functions and helpers
-  - `src/shared/api/`: API layer and requests
-  - `src/shared/config/`: Configuration files (routes, API endpoints, env)
+  - `src/shared/config/`: Theme constants and the legacy mark glyph data (`legacyMark.ts`)
 
 ### Technology Stack
-- **Framework**: Next.js 15.5.3 with App Router and Turbopack
-- **Runtime**: React 19.1.0
+- **Framework**: Next.js 16 with App Router and Turbopack
+- **Runtime**: React 19
 - **Language**: TypeScript 5
-- **Styling**: Tailwind CSS 4 with PostCSS for utility-first CSS
-- **Animations**: Framer Motion for complex animations and transitions
-- **Fonts**: Geist Sans and Geist Mono fonts optimized with `next/font`
+- **Styling**: Tailwind CSS 4 (CSS-first `@theme` in `src/app/styles/globals.css`, no `tailwind.config`)
+- **Font**: Overused Grotesk variable (OFL), self-hosted in `public/fonts`
+
+## Design System
+
+All tokens live in `src/app/styles/globals.css`. Components use tokens only — no hex colors, no font-size utilities, no arbitrary colors.
+
+- **Color**: four roles — `canvas` (page), `ink` (text), `muted` (secondary text), `surface` (behind artworks). Dark/light only swap values via `<html data-theme>`; `dark:` follows that attribute, not the OS. `muted` passes WCAG AA on both `canvas` and `surface`.
+- **Type**: one size (`text-base` = 14px / 1.5) and base weight 300 for everything. Hierarchy comes from weight (`font-semibold` = 600) and color (`text-muted`) only.
+- **Spacing**: `gutter` for page edges and grid gaps (16px → 20px at `lg`), `section` (44px) between blocks. Smaller gaps use the Tailwind 4px scale.
+- **Layout**: pages render inside `SiteFrame` (four corners: logo · nav · contacts · theme). Content grids are 12 columns with `gap-x-gutter`.
+- **Mark**: the legacy symbol is pixel letters l·e·g·a·c·y folded into 10×11 cells. Glyph data in `shared/config/legacyMark.ts` drives the logo (`LogoMark`), the `logo` artwork, and the generated icons (`app/icon.tsx`, `app/apple-icon.tsx`). Render it only at heights that are multiples of 11px.
+- **Focus**: `:focus-visible` draws a 1px `ink` outline, 3px offset.
+- **Dev note**: Turbopack sometimes keeps stale CSS after `@theme` changes — stop the dev server, `rm -rf .next`, restart.
 
 ## Development Commands
 
@@ -116,11 +126,10 @@ export const apiClient = {
 
 ## Technology Stack
 
-- **Framework**: Next.js 15.5.3 with App Router and Turbopack
-- **Runtime**: React 19.1.0
+- **Framework**: Next.js 16 with App Router and Turbopack
+- **Runtime**: React 19
 - **Language**: TypeScript 5
-- **Styling**: Tailwind CSS 4.1.13
-- **Animation**: Framer Motion 12.23.15
+- **Styling**: Tailwind CSS 4
 - **Architecture**: Feature-Sliced Design v2.1
 - **Development Tools**: FSD CLI, Steiger (linter, in development)
 - **Code Quality**: ESLint 9, Prettier 3.6.2, Husky 9.1.7

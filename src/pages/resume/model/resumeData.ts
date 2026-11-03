@@ -16,7 +16,6 @@ export interface ResumeEntry {
 
 export const resumeProfile = {
   name: '이찬',
-  birthDate: '1999.06.01',
   position: 'Frontend Developer',
   email: 'comfyofmymind@gmail.com',
 };
@@ -28,6 +27,16 @@ export const resumeCareers: ResumeEntry[] = [
     subtitle: 'Frontend Developer · Design Lead',
     period: '2025.12 - present',
     projects: [
+      {
+        name: 'Design Bridge',
+        period: '2026.07 - present',
+        achievements: [
+          'Figma ↔ Liquid 양방향 변환 · 자동 검증 플러그인 개발',
+          '단계별 검증 하네스로 디자인 불일치 해소',
+          '페이지당 수정 라운드 78% 이상 감소',
+          '테마를 오토레이아웃 Figma로 역변환, 반응형 불일치 98% 감소',
+        ],
+      },
       {
         name: '글로벌 리테일 프로젝트',
         period: '2026.02 - 2026.07',

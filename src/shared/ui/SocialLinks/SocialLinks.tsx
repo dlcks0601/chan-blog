@@ -1,6 +1,7 @@
 import { cn } from '@/shared/lib/utils';
 
 const SOCIALS = [
+  { label: 'Instagram', href: 'https://www.instagram.com/leechvnn' },
   { label: 'Github', href: 'https://github.com/dlcks0601' },
   { label: 'Email', href: 'mailto:comfyofmymind@gmail.com' },
 ];
@@ -18,7 +19,7 @@ export function SocialLinks({ className }: SocialLinksProps) {
           href={social.href}
           target='_blank'
           rel='noreferrer'
-          className={cn('w-fit', 'hover:underline')}
+          className={cn('w-fit', 'transition-colors hover:text-muted')}
         >
           {social.label}
         </a>
