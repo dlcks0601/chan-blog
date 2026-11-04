@@ -40,6 +40,7 @@ All tokens live in `src/app/styles/globals.css`. Components use tokens only — 
 - **Layout**: pages render inside `SiteFrame` (four corners: logo · nav · contacts · theme). Content grids are 12 columns with `gap-x-gutter`.
 - **Mark**: the legacy symbol is pixel letters l·e·g·a·c·y folded into 10×11 cells. Glyph data in `shared/config/legacyMark.ts` drives the logo (`LogoMark`), the `logo` artwork, and the generated icons (`app/icon.tsx`, `app/apple-icon.tsx`). Render it only at heights that are multiples of 11px.
 - **Focus**: `:focus-visible` draws a 1px `ink` outline, 3px offset.
+- **Artworks**: each Collection piece is a widget (`widgets/legacy-logo-artwork`, `widgets/duo-artwork`) plus a page slice. The `duo` device shows site captures in `public/artworks/duo` (folded = mobile home, unfolded = home and Resume as one screen) — when those pages change, run `node scripts/capture-duo-screens.mjs` with `pnpm dev` up.
 - **Dev note**: Turbopack sometimes keeps stale CSS after `@theme` changes — stop the dev server, `rm -rf .next`, restart.
 
 ## Development Commands

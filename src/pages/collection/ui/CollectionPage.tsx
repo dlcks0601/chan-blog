@@ -2,12 +2,14 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ARTWORKS, type ArtworkSlug } from '@/entities/artwork';
 import { cn } from '@/shared/lib/utils';
+import { DuoFold } from '@/widgets/duo-artwork';
 import { LegacyMotion } from '@/widgets/legacy-logo-artwork';
 import { SiteFrame } from '@/widgets/site-frame';
 
 /** 목록에서 사각형 안에 보여줄 작품 그 자체. */
 const PREVIEWS: Record<ArtworkSlug, ReactNode> = {
   logo: <LegacyMotion className={cn('w-4/5')} />,
+  duo: <DuoFold autoplay />,
 };
 
 export function CollectionPage() {
@@ -26,7 +28,7 @@ export function CollectionPage() {
             >
               <div
                 className={cn(
-                  'aspect-3/4 bg-surface',
+                  'relative aspect-3/4 bg-surface',
                   'flex items-center justify-center'
                 )}
               >
