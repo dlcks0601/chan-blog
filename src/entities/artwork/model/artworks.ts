@@ -8,6 +8,7 @@ export interface Artwork {
 
 export const ARTWORKS = [
   { slug: 'logo', title: 'logo', medium: 'Pixel letters, motion', year: 2026 },
+  { slug: 'duo', title: 'duo', medium: 'WebGL, motion', year: 2026 },
 ] as const satisfies readonly Artwork[];
 
 export type ArtworkSlug = (typeof ARTWORKS)[number]['slug'];
