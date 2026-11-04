@@ -163,6 +163,11 @@ export function DuoFold({
           const set = await (screens[theme] ??= loadScreens(
             theme,
             textureWidth
+          ).then(canvases =>
+            // 그사이 페이지를 떠났으면 정리된 렌더러로 흐리지 않는다
+            cancelled
+              ? { inner: [], outer: [], dispose() {} }
+              : fold.buildScreens(canvases)
           ));
           if (cancelled) return;
           fold.setScreens(set);
@@ -259,9 +264,7 @@ export function DuoFold({
           root.removeEventListener('pointercancel', onPointerUp);
           root.removeEventListener('keydown', onKeyDown);
           for (const set of Object.values(screens))
-            set?.then(({ inner, outer }) =>
-              [...inner, ...outer].forEach(texture => texture.dispose())
-            );
+            set?.then(textures => textures.dispose());
           fold.dispose();
           canvas.remove();
         };

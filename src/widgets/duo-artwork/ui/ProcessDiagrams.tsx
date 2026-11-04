@@ -6,9 +6,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useId, useRef } from 'react';
 import { cn } from '@/shared/lib/utils';
 import {
+  blurAt,
+  BLUR_UNIT_PX,
   CAMERA_DISTANCE,
   H,
   MEASURED_SHADE,
+  R,
+  SCREEN_H,
   shadeAt,
   TURN_EASE,
   TURN_SECONDS,
@@ -404,6 +408,239 @@ export function MotionDiagram({ className }: DiagramProps) {
       <Label x={-SCALE} y={HALF_H + 1.6} anchor='start'>
         180°
       </Label>
+    </svg>
+  );
+}
+
+const smoothstep = (from: number, to: number, value: number) => {
+  const t = Math.min(1, Math.max(0, (value - from) / (to - from)));
+  return t * t * (3 - 2 * t);
+};
+
+/** 화면 속 글줄 — 글자를 짧은 막대로. 정해진 씨앗이라 서버와 브라우저가 같은 모양을 그린다 */
+function textLines(seed: number, fromEdge = false) {
+  let state = seed;
+  const random = () => (state = (state * 16807) % 2147483647) / 2147483647;
+  const words: { u0: number; u1: number; y: number }[] = [];
+  for (let row = 0; row < 17; row++) {
+    if (random() < 0.15) continue; // 문단 사이
+    const y = -0.64 + row * 0.08;
+    const end = 0.62 + 0.3 * random();
+    for (let u = 0.08; u < end - 0.03; ) {
+      const u1 = Math.min(u + 0.04 + 0.1 * random(), end);
+      words.push(fromEdge ? { u0: 1 - u1, u1: 1 - u, y } : { u0: u, u1, y });
+      u = u1 + 0.025;
+    }
+  }
+  return words;
+}
+
+const HINGE_LIFT = 40;
+const HINGE_SCALE = 10;
+const WORD_H = 0.022;
+const BINS = 10; // 경첩에서 끝까지 흐림 단계
+const FLAT_WORDS = textLines(7);
+const LIFTED_BINS = Array.from({ length: BINS }, (_, i) =>
+  textLines(11, true).filter(
+    ({ u0, u1 }) => Math.min(BINS - 1, Math.floor(((u0 + u1) / 2) * BINS)) === i
+  )
+);
+const LIFTED_WORDS = LIFTED_BINS.flat();
+// 반쪽 몸체 윤곽 — 경첩 쪽(u = 0)은 각지고 끝 쪽만 둥글다
+const corner = (cy: number, from: number) =>
+  Array.from({ length: 9 }, (_, i) => {
+    const a = from + (i / 8) * (Math.PI / 2);
+    return [1 - R + R * Math.cos(a), cy + R * Math.sin(a)] as const;
+  });
+const HALF = [
+  [0, -H / 2],
+  ...corner(-H / 2 + R, -Math.PI / 2),
+  ...corner(H / 2 - R, 0),
+  [0, H / 2],
+] as const;
+
+/** 들린 판을 정면에서 본 모습 — 기기와 같은 원근, 같은 흐림·밝기·쐐기 그림자 */
+function liftedView(lift: number) {
+  const rad = (lift * Math.PI) / 180;
+  const sin = Math.sin(rad);
+  const cos = Math.cos(rad);
+  const depth = (u: number) => CAMERA_DISTANCE / (CAMERA_DISTANCE - u * sin);
+  const at = (u: number, y: number): [number, number] => [
+    -u * cos * depth(u) * HINGE_SCALE,
+    y * depth(u) * HINGE_SCALE,
+  ];
+  // 기기와 같다 — 펼친 판의 화면 위아래 선 조금 안쪽에서 옅게 시작해 솟은 화면 끝까지 짙어진다
+  const shadow = (u: number, y: number) => {
+    const line = (SCREEN_H / 2) * HINGE_SCALE;
+    const over = (Math.abs(at(u, y)[1]) - line) / (line * depth(u) - line || 1);
+    return 0.9 * smoothstep(0.25, 0.7, sin) * smoothstep(-0.5, 1, over);
+  };
+  const [edgeX, edgeY] = at(1, H / 2);
+  // 오른쪽 판의 위아래 선을 들린 판 윤곽에 닿을 때까지 그대로 잇는다 — 화면 경계는 이 수평선에 남고,
+  // 원근으로 솟은 쐐기만 그림자가 덮는다
+  const line = (H / 2) * HINGE_SCALE;
+  const arc = corner(-H / 2 + R, -Math.PI / 2).map(([u, y]) => at(u, y));
+  const i = arc.findIndex(([, y]) => y >= -line);
+  const [x0, y0] = arc[Math.max(0, i - 1)];
+  const [x1, y1] = arc[Math.max(0, i)];
+  const reach = y1 === y0 ? x1 : x0 + ((x1 - x0) * (-line - y0)) / (y1 - y0);
+  return {
+    outline: HALF.map(([u, y]) => pt(...at(u, y))).join(' '),
+    wedges: [-1, 1].map(
+      side => `${pt(0, side * line)} ${pt(reach, side * line)}`
+    ),
+    blurs: Array.from({ length: BINS }, (_, i) => {
+      const d = (i + 0.5) / BINS;
+      const s = (blurAt(rad, d) / BLUR_UNIT_PX) * HINGE_SCALE * depth(d);
+      return `${r3(s * cos)} ${r3(s / 2)}`;
+    }),
+    words: LIFTED_WORDS.map(({ u0, u1, y }) => ({
+      points: [
+        at(u0, y - WORD_H / 2),
+        at(u1, y - WORD_H / 2),
+        at(u1, y + WORD_H / 2),
+        at(u0, y + WORD_H / 2),
+      ]
+        .map(p => pt(...p))
+        .join(' '),
+      opacity: r3(
+        0.85 * shadeAt(sin, (u0 + u1) / 2) * (1 - shadow((u0 + u1) / 2, y))
+      ),
+    })),
+    edge: `translate(${pt(edgeX, edgeY + 1.6).replace(',', ' ')})`,
+  };
+}
+
+/**
+ * 04 — 정면에서 본 경첩. 오른쪽 판은 평평하고 왼쪽 판만 기기와 같은 원근으로 들린다.
+ * 두 판이 만나는 경첩은 곧은 선 하나로 또렷하게 남고, 들린 끝으로 갈수록 글줄이 옆으로 번지고
+ * 어두워지며, 위아래로 쐐기 모양 그림자가 자란다.
+ */
+export function HingeDiagram({ className }: DiagramProps) {
+  const id = useId();
+  const HALF_H = (H / 2) * HINGE_SCALE;
+
+  // 평평하게 펼친 판이 들리며 흐림·어두움·그림자가 함께 자란다
+  const ref = useDrawIn((svg, timeline) => {
+    const outline = svg.querySelector('[data-outline]')!;
+    const wedges = [...svg.querySelectorAll('[data-wedge]')];
+    const blurs = [...svg.querySelectorAll('[data-bin]')];
+    const words = [...svg.querySelectorAll('[data-word]')];
+    const edge = svg.querySelector('[data-edge]')!;
+    const pose = { lift: 0 };
+    timeline
+      .fromTo(
+        pose,
+        { lift: 0 },
+        {
+          lift: HINGE_LIFT,
+          duration: 1.6,
+          ease: 'power3.inOut',
+          immediateRender: true,
+          onUpdate: () => {
+            const view = liftedView(pose.lift);
+            outline.setAttribute('points', view.outline);
+            wedges.forEach((line, i) =>
+              line.setAttribute('points', view.wedges[i])
+            );
+            blurs.forEach((blur, i) =>
+              blur.setAttribute('stdDeviation', view.blurs[i])
+            );
+            words.forEach((word, i) => {
+              word.setAttribute('points', view.words[i].points);
+              word.setAttribute('fill-opacity', String(view.words[i].opacity));
+            });
+            edge.setAttribute('transform', view.edge);
+          },
+        }
+      )
+      .from(...fadeIn(svg.querySelectorAll('[data-fade]')), '-=0.5');
+  });
+
+  const view = liftedView(HINGE_LIFT);
+
+  return (
+    <svg ref={ref} viewBox='-11 -9 22 19.5' aria-hidden className={className}>
+      <defs>
+        {view.blurs.map((stdDeviation, i) => (
+          <filter
+            key={i}
+            id={`${id}-blur-${i}`}
+            x='-300%'
+            y='-20%'
+            width='700%'
+            height='140%'
+          >
+            <feGaussianBlur data-bin stdDeviation={stdDeviation} />
+          </filter>
+        ))}
+      </defs>
+
+      <polyline
+        {...HAIRLINE}
+        strokeOpacity={0.28}
+        points={HALF.map(([u, y]) => pt(u * HINGE_SCALE, y * HINGE_SCALE)).join(
+          ' '
+        )}
+      />
+      {FLAT_WORDS.map(({ u0, u1, y }) => (
+        <rect
+          key={`${u0}-${y}`}
+          x={r3(u0 * HINGE_SCALE)}
+          y={r3((y - WORD_H / 2) * HINGE_SCALE)}
+          width={r3((u1 - u0) * HINGE_SCALE)}
+          height={r3(WORD_H * HINGE_SCALE)}
+          fill='currentColor'
+          fillOpacity={0.85}
+        />
+      ))}
+
+      <polyline
+        data-outline
+        {...HAIRLINE}
+        strokeOpacity={0.28}
+        points={view.outline}
+      />
+      {LIFTED_BINS.map((bin, i) => {
+        const start = LIFTED_BINS.slice(0, i).flat().length;
+        return (
+          <g key={i} filter={`url(#${id}-blur-${i})`}>
+            {bin.map((_, j) => (
+              <polygon
+                key={j}
+                data-word
+                points={view.words[start + j].points}
+                fill='currentColor'
+                fillOpacity={view.words[start + j].opacity}
+              />
+            ))}
+          </g>
+        );
+      })}
+      <g data-fade>
+        {view.wedges.map((points, i) => (
+          <polyline
+            key={i}
+            data-wedge
+            {...HAIRLINE}
+            strokeOpacity={0.5}
+            strokeDasharray='0.25 0.35'
+            points={points}
+          />
+        ))}
+      </g>
+
+      <line {...HAIRLINE} x1={0} y1={-HALF_H} x2={0} y2={HALF_H} />
+      <circle cx={0} cy={-HALF_H} r={0.22} fill='currentColor' />
+      <circle cx={0} cy={HALF_H} r={0.22} fill='currentColor' />
+      <Label x={0} y={HALF_H + 1.6} size={0.75}>
+        hinge
+      </Label>
+      <g data-edge transform={view.edge}>
+        <Label x={0} y={0} size={0.75}>
+          edge
+        </Label>
+      </g>
     </svg>
   );
 }

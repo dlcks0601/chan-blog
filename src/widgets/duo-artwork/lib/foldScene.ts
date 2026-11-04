@@ -1,5 +1,8 @@
 import {
+  type BufferGeometry,
+  CircleGeometry,
   Color,
+  CylinderGeometry,
   DataTexture,
   DoubleSide,
   ExtrudeGeometry,
@@ -8,7 +11,6 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
-  MeshStandardMaterial,
   PerspectiveCamera,
   PlaneGeometry,
   PMREMGenerator,
@@ -20,12 +22,16 @@ import {
   Vector4,
   WebGLRenderer,
 } from 'three';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   BEV,
   BEZEL,
+  BLUR_CURVE,
   BLUR_K,
+  BLUR_REACH,
   BLUR_SIGMAS,
   BLUR_SPILL,
+  BLUR_UNIT_PX,
   CAMERA_DISTANCE,
   H,
   LIFT,
@@ -40,23 +46,41 @@ import {
   T,
   W,
 } from '../model/device';
+import { createBlurrer } from './blurLevels';
+import type { ScreenCanvases } from './screens';
 
-/** 흐림 단계별 텍스처 — 안쪽(PC) 화면과 바깥(모바일) 화면 */
+/** 흐림 단계별 텍스처 — 안쪽(PC) 화면과 바깥(모바일) 화면. 다 쓰면 dispose 한다. */
 export interface ScreenTextures {
   inner: Texture[];
   outer: Texture[];
+  dispose(): void;
 }
 
 const LEVELS = BLUR_SIGMAS.length;
 
 const vertexShader = /* glsl */ `
   uniform float uSa, uSb;
+  uniform vec2 uSize;
   varying vec2 vUv;
   varying float vS;
+  varying vec3 vView;
+  varying vec2 vLine;
+  varying vec4 vEdge;
   void main() {
     vUv = uv;
     vS = uSa + uSb * position.x; // 경첩에서 떨어진 거리(들린 쪽 +)
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec4 view = modelViewMatrix * vec4(position, 1.0);
+    vView = view.xyz;
+    // 경첩 쪽 위아래 모서리가 화면에 비치는 높이 — 펼친 판의 위아래 선과 같은 수평선
+    float hinge = -uSa / uSb;
+    vec4 top = modelViewMatrix * vec4(hinge, 0.5 * uSize.y, 0.0, 1.0);
+    vec4 bottom = modelViewMatrix * vec4(hinge, -0.5 * uSize.y, 0.0, 1.0);
+    vLine = vec2(top.y / -top.z, bottom.y / -bottom.z);
+    // 같은 세로줄의 화면 위아래 끝
+    top = modelViewMatrix * vec4(position.x, 0.5 * uSize.y, 0.0, 1.0);
+    bottom = modelViewMatrix * vec4(position.x, -0.5 * uSize.y, 0.0, 1.0);
+    vEdge = vec4(top.yz, bottom.yz);
+    gl_Position = projectionMatrix * view;
   }`;
 
 const fragmentShader = /* glsl */ `
@@ -66,6 +90,9 @@ const fragmentShader = /* glsl */ `
   uniform float uHinge, uPhi, uLift, uBase, uSink;
   varying vec2 vUv;
   varying float vS;
+  varying vec3 vView;
+  varying vec2 vLine;
+  varying vec4 vEdge;
 
   float sdRoundBox(vec2 p, vec2 b, vec4 r) { // r = (오른위, 오른아래, 왼위, 왼아래)
     r.xy = (p.x > 0.0) ? r.xy : r.zw;
@@ -86,16 +113,32 @@ const fragmentShader = /* glsl */ `
 
     // 들린 만큼, 경첩에서 먼 만큼 흐린 단계를 골라 이웃 단계와 섞는다
     vec2 t = vec2(uU.x + uU.y * vUv.x, vUv.y);
-    float sigma = ${BLUR_K.toFixed(1)} * uPhi * max(0.0, vS + ${BLUR_SPILL});
+    float sigma = ${BLUR_K.toFixed(1)} * pow(uPhi, ${BLUR_CURVE.toFixed(2)}) * pow(max(0.0, vS + ${BLUR_SPILL}), ${BLUR_REACH.toFixed(2)});
     float f = clamp(sigma < 1.0 ? sigma : 2.0 * log2(sigma) + 1.0, 0.0, ${LEVELS - 1}.0);
-    vec4 col = ${BLUR_SIGMAS.map((_, i) => `texture2D(uL${i}, t) * w(f, ${i}.0)`).join('\n      + ')};
+    // 필요한 두 단계만 읽는다 — 14장을 다 읽으면 화면이 클수록 무겁다
+    vec4 col = vec4(0.0);
+    ${BLUR_SIGMAS.map((_, i) => `if (abs(f - ${i}.0) < 1.0) col += texture2D(uL${i}, t) * w(f, ${i}.0);`).join('\n    ')}
 
+    // 텍스처는 화면에 보이는 색 그대로라 색 공간을 바꾸지 않고 내보낸다
     gl_FragColor = vec4(col.rgb, alpha);
-    #include <colorspace_fragment>
     // 어둡게 하는 건 화면에 보이는 색에서 — 안쪽 화면이 깨어나는 정도와 들린 끝의 어두움이 곱해진다
     float dark = uSink * min(0.8, 0.87 * uLift) * pow(clamp(vS, 0.0, 1.0), 1.3);
     float dither = (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
-    gl_FragColor.rgb = gl_FragColor.rgb * (1.0 - uBase) * (1.0 - dark) + dither;
+    // 입체감 — 들린 판은 원근으로 끝이 위아래로 솟는다. 펼친 판의 위아래 선을 그대로 이은 수평선이
+    // 화면의 밝은 경계로 보이게, 솟은 쐐기를 그림자로 덮는다. 쐐기 높이(over 0~1) 기준으로 선 아래 절반
+    // 쯤에서 옅게 시작해 화면 끝까지 길게 짙어진다 — 반쯤 어두운 곳이 선 바로 위(쐐기의 30%)에 오고
+    // 경계선은 보이지 않는다(참고 영상: 50% 지점이 쐐기의 20~28%). 살짝 열 땐 띠가 나뉘어 보이지 않게
+    // 들린 만큼 서서히 짙어진다(참고 영상: 20° 까지는 띠가 없고 45° 쯤 다 짙어진다).
+    // 경첩(회전축)은 움직이지 않으니 쐐기가 없고, 들린 끝으로 갈수록, 많이 들릴수록 두꺼워진다
+    float h = vView.y / -vView.z;
+    float top = vEdge.x / -vEdge.y, bottom = vEdge.z / -vEdge.w;
+    float over = max(
+      (h - vLine.x) / max(top - vLine.x, 1e-6),
+      (vLine.y - h) / max(vLine.y - bottom, 1e-6)
+    );
+    float shadow = uSink * 0.9 * smoothstep(0.25, 0.7, uLift) * smoothstep(-0.5, 1.0, over);
+    gl_FragColor.rgb =
+      gl_FragColor.rgb * (1.0 - uBase) * (1.0 - dark) * (1.0 - shadow) + dither;
   }`;
 
 function roundedRect(
@@ -133,39 +176,40 @@ function slabGeometry(x0: number, x1: number, radii: number[]) {
     bevelThickness: BEV,
     bevelSize: BEV,
     bevelSegments: 4,
-    curveSegments: 32,
+    curveSegments: 64,
   });
   geometry.translate(0, 0, -T + BEV);
-  return geometry;
+  // 둥근 모서리와 테두리를 이루는 조각 사이의 면 방향을 부드럽게 잇는다 — 금속에 조각마다 다른 빛이
+  // 비쳐 곡선이 꺾여 보이지 않게. 각진 모서리(36° 넘게 꺾이는 곳)는 그대로 둔다.
+  // 이 함수는 꼭짓점을 0.01 격자로 묶는데 조각 하나가 ~0.003 이라, 키워서 계산하고 되돌린다
+  // (그대로 두면 조각 몇 개가 한 방향으로 뭉쳐 모서리에 줄무늬가 진다)
+  geometry.scale(1000, 1000, 1000);
+  const smooth = toCreasedNormals(geometry, Math.PI / 5).scale(
+    0.001,
+    0.001,
+    0.001
+  );
+  geometry.dispose();
+  return smooth;
 }
 
 /**
- * 스튜디오 — 큰 밝은 조명으로 둘러싸고 바닥과 뒤쪽만 어둡다.
- * 평평한 옆면은 어느 각도에서도 고른 은색 띠가 되고, 둥근 끝은 가는 어두운 선으로 남는다.
+ * 스튜디오 — 카메라 축을 감싸는 원통형 링 조명과 앞쪽 원판, 뒤쪽은 어둡다.
+ * 사방이 똑같아서 둥근 테두리가 어느 방향에서나 같은 모습이라 모서리가 매끄럽게 이어지고,
+ * 들린 판의 평평한 옆면은 옆쪽 링을 비춰 고른 은색 띠가 된다. 뒤쪽을 비추는 테두리 바깥은 가는 어두운 선.
  */
 function studio(renderer: WebGLRenderer) {
   const env = new Scene();
-  env.background = new Color(0xa8a8ac);
-  const light = (
-    w: number,
-    h: number,
-    pos: [number, number, number],
-    k: number
-  ) => {
-    const mesh = new Mesh(
-      new PlaneGeometry(w, h),
-      new MeshBasicMaterial({ color: new Color(k, k, k), side: DoubleSide })
-    );
-    mesh.position.set(...pos);
-    mesh.lookAt(0, 0, 0);
-    env.add(mesh);
-  };
-  light(14, 4, [0, 6, 1], 2.4);
-  light(4, 14, [-6, 0, 1], 2.2);
-  light(4, 14, [6, 0, 1], 2.0);
-  light(14, 8, [0, 0.5, 7], 2.0);
-  light(16, 7, [0, -6, 0], 0.05);
-  light(16, 1.4, [0, 2.5, -6], 0.08);
+  env.background = new Color(0x2c2c2f);
+  const glow = (k: number) =>
+    new MeshBasicMaterial({ color: new Color(k, k, k), side: DoubleSide });
+  const ring = new Mesh(new CylinderGeometry(7, 7, 7, 96, 1, true), glow(2.2));
+  ring.rotation.x = Math.PI / 2; // 축을 카메라 쪽(z)으로
+  ring.position.z = 2.5; // z −1 ~ 6, 앞쪽 반구를 둘러싼다
+  env.add(ring);
+  const front = new Mesh(new CircleGeometry(7, 96), glow(1.8));
+  front.position.z = 6;
+  env.add(front);
 
   const pmrem = new PMREMGenerator(renderer);
   const target = pmrem.fromScene(env, 0.02);
@@ -178,11 +222,6 @@ function studio(renderer: WebGLRenderer) {
   });
   return target;
 }
-
-const smoothstep = (a: number, b: number, x: number) => {
-  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
-};
 
 /**
  * 접이식 기기 한 대. 각도(0° 닫힘 ~ 180° 활짝)와 화면 텍스처만 바꿔 주면 된다.
@@ -199,12 +238,8 @@ export function createFoldScene() {
   const camera = new PerspectiveCamera(24, 1, 0.1, 100);
   camera.position.set(0, 0, CAMERA_DISTANCE);
 
-  const glass = new MeshStandardMaterial({
-    color: 0x050506,
-    roughness: 0.4,
-    metalness: 0,
-    envMapIntensity: 0.06,
-  });
+  // 베젤 — 반사 없는 검정. 밝은 스튜디오를 비추면 회색으로 뜬다
+  const glass = new MeshBasicMaterial({ color: 0x050506 });
   // 경첩 너머로 겹친 곳에서 금속 끝이 다른 판의 유리와 거의 같은 깊이에 놓인다 — 금속을 살짝 뒤로 밀어 유리가 이기게 한다
   const frame = new MeshPhysicalMaterial({
     color: 0xe6e3de,
@@ -216,6 +251,7 @@ export function createFoldScene() {
   });
   const body = [glass, frame];
 
+  const blurrer = createBlurrer(renderer);
   const blank = new DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
   blank.needsUpdate = true;
 
@@ -263,7 +299,7 @@ export function createFoldScene() {
   scene.add(device);
 
   // 두 판은 경첩 너머로 겹친다 — 펼치면 테두리가 이음새 없이 이어진다
-  const baseSlab = new Mesh(slabGeometry(-OVERLAP, W, [RH, R, R, RH]), body);
+  const baseSlab = new Mesh(undefined, body);
   device.add(baseSlab);
   const innerRight = screen(SCREEN_W, {
     sa: -SCREEN_W / 2,
@@ -278,7 +314,7 @@ export function createFoldScene() {
 
   const cover = new Group();
   device.add(cover);
-  const coverSlab = new Mesh(slabGeometry(-W, OVERLAP, [R, RH, RH, R]), body);
+  const coverSlab = new Mesh(undefined, body);
   cover.add(coverSlab);
   const innerLeft = screen(SCREEN_W, {
     sa: SCREEN_W / 2,
@@ -305,16 +341,35 @@ export function createFoldScene() {
   const uniformsOf = (mesh: Mesh) => (mesh.material as ShaderMaterial).uniforms;
   let dirty = true;
 
-  // 경첩 쪽 모서리 — 접었을 때만 살짝 둥글고, 펼칠수록 각져서 활짝 펴면 두 판이 하나로 이어진다
-  let hingeRadius = -1;
-  function shapeHinge(rh: number) {
-    if (Math.abs(rh - hingeRadius) < 0.001) return;
-    hingeRadius = rh;
-    baseSlab.geometry.dispose();
-    baseSlab.geometry = slabGeometry(-OVERLAP, W, [rh, R, R, rh]);
-    coverSlab.geometry.dispose();
-    coverSlab.geometry = slabGeometry(-W, OVERLAP, [R, rh, rh, R]);
-    const rs = Math.max(0, rh - BEZEL); // 바깥 화면은 몸체 모서리에서 베젤만큼 안쪽
+  // 경첩 쪽 모서리 — 접었을 때만 살짝 둥글고, 펼칠수록 각져서 활짝 펴면 두 판이 하나로 이어진다.
+  // 몸체를 매 프레임 새로 만들면 무거워서(판 하나에 ~20ms) 세 단계를 미리 만들어 두고 갈아 끼운다
+  const HINGE_STEPS = [RH, RH / 2, 0]; // 접힘 · 반쯤 · 펼침
+  const variants: { base: BufferGeometry; cover: BufferGeometry }[] = [];
+  const variant = (i: number) =>
+    (variants[i] ??= {
+      base: slabGeometry(-OVERLAP, W, [HINGE_STEPS[i], R, R, HINGE_STEPS[i]]),
+      cover: slabGeometry(-W, OVERLAP, [R, HINGE_STEPS[i], HINGE_STEPS[i], R]),
+    });
+  baseSlab.geometry = variant(0).base;
+  coverSlab.geometry = variant(0).cover;
+  // 나머지 단계는 첫 화면이 뜬 뒤 쉬는 틈에 만든다
+  let idle = 0;
+  const prepare = (i: number) => {
+    if (i >= HINGE_STEPS.length) return;
+    idle = window.setTimeout(() => {
+      variant(i);
+      prepare(i + 1);
+    }, 200);
+  };
+  prepare(1);
+  let hingeStep = 0;
+  function shapeHinge(angle: number) {
+    const i = angle < 50 ? 0 : angle < 130 ? 1 : 2;
+    if (i === hingeStep) return;
+    hingeStep = i;
+    baseSlab.geometry = variant(i).base;
+    coverSlab.geometry = variant(i).cover;
+    const rs = Math.max(0, HINGE_STEPS[i] - BEZEL); // 바깥 화면은 몸체 모서리에서 베젤만큼 안쪽
     (uniformsOf(outer).uRadii.value as Vector4).set(RS, RS, rs, rs);
   }
 
@@ -339,7 +394,7 @@ export function createFoldScene() {
       const phi = Math.min(rad, Math.PI - rad);
       const lift = Math.sin(phi);
       cover.rotation.y = Math.PI - rad;
-      shapeHinge(RH * (1 - smoothstep(20, 160, angle)));
+      shapeHinge(angle);
       // 보이는 폭의 가운데를 화면 가운데로
       device.position.x = -(Math.min(0, W * Math.cos(rad)) + W) / 2;
       const asleep = sleepAt(Math.sin(Math.min(Math.PI - rad, Math.PI / 2)));
@@ -354,6 +409,30 @@ export function createFoldScene() {
         u.uBase.value = base;
       }
       dirty = true;
+    },
+
+    /** 화면 그림을 흐림 단계 텍스처로 — 흐림 기준(반쪽 폭 250px)을 각 그림의 px 로 바꿔 넣는다 */
+    buildScreens({
+      inner,
+      outer: outerCanvas,
+    }: ScreenCanvases): ScreenTextures {
+      const sigmasFor = (canvas: HTMLCanvasElement, unitsWide: number) => {
+        const texPerPx = canvas.width / unitsWide / BLUR_UNIT_PX;
+        return BLUR_SIGMAS.map(sigma => sigma * texPerPx);
+      };
+      const innerLevels = blurrer.levels(inner, sigmasFor(inner, 2 * SCREEN_W));
+      const outerLevels = blurrer.levels(
+        outerCanvas,
+        sigmasFor(outerCanvas, OUTER_W)
+      );
+      return {
+        inner: innerLevels.textures,
+        outer: outerLevels.textures,
+        dispose() {
+          innerLevels.dispose();
+          outerLevels.dispose();
+        },
+      };
     },
 
     setScreens({ inner, outer: outerLevels }: ScreenTextures) {
@@ -374,6 +453,11 @@ export function createFoldScene() {
     },
 
     dispose() {
+      window.clearTimeout(idle);
+      for (const { base, cover: c } of variants) {
+        base.dispose();
+        c.dispose();
+      }
       scene.traverse(object => {
         if (object instanceof Mesh) object.geometry.dispose();
       });
@@ -382,6 +466,7 @@ export function createFoldScene() {
       glass.dispose();
       frame.dispose();
       blank.dispose();
+      blurrer.dispose();
       environment.dispose();
       renderer.dispose();
     },
