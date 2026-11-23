@@ -6,7 +6,9 @@ export function HomePage() {
   return (
     <SiteFrame>
       <p className={cn('max-w-140')}>
-        <span className={cn('block')}>Hello, I&apos;m a Design Engineer.</span>
+        <span className={cn('block')}>
+          Hello, I&apos;m a Product Engineer and Design Lead.
+        </span>
         <span className={cn('block')}>Build anything. For users.</span>
         <span className={cn('block')}>
           Interested in the creative, interactive web and design systems.
