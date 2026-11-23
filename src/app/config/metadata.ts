@@ -2,17 +2,17 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'legacy',
-  description: 'Frontend Developer Portfolio',
+  description: 'Design Engineer Portfolio',
   authors: [{ name: 'leechan' }],
-  keywords: ['Frontend', 'Developer', 'Next.js', 'React', 'TypeScript'],
+  keywords: ['Design Engineer', 'Frontend', 'Next.js', 'React', 'TypeScript'],
   openGraph: {
     title: 'legacy',
-    description: 'Frontend Developer Portfolio',
+    description: 'Design Engineer Portfolio',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'legacy',
-    description: 'Frontend Developer Portfolio',
+    description: 'Design Engineer Portfolio',
   },
 };
